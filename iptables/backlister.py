@@ -30,6 +30,8 @@ def iptables_engine ():
     for file_single_line in file_lines:
         print(file_single_line)
         # needs more magic here - wip
+        # $objIPTables -A $objDropListName -i ${objPublicInterface} -s $strIPAddress -j LOG --log-prefix " Drop Bad IP List "
+	    # $objIPTables -A $objDropListName -i ${objPublicInterface} -s $strIPAddress -j DROP
     
     return True    
 
