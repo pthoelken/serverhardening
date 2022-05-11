@@ -26,7 +26,7 @@ function ApplicationCheck(){
 }
 
 function CheckRuntimePreparing(){
-    aryApplications=( iptables iptables-save ipset wget tee )
+    aryApplications=( iptables iptables-save ipset wget tee fail2ban )
     aryFolders=( $strBlacklistFolder )
 
     for objApps in "${aryApplications[@]}"; do
