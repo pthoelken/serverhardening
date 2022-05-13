@@ -54,16 +54,6 @@ function PrepareBacklist() {
         rm -rf $strBlacklistTempFile
 }
 
-chain_exists()
-{
-    [ $# -lt 1 -o $# -gt 2 ] && { 
-        return 1
-    }
-    local chain_name="$1" ; shift
-    [ $# -eq 1 ] && local table="--table $1"
-    iptables $table -n --list "$chain_name" >/dev/null 2>&1
-}
-
 function LogChainConfiguration() {
     if [ -z "$intBlacklistingINPUTLineNo" ]; then
         iptables -N $strChainNameLOG
