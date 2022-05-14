@@ -2,7 +2,6 @@
 export PATH="/bin:/usr/bin:/sbin:/usr/sbin"
 
 strChainName=BLACKLIST
-strChainNameLOG=INPUT-DROP-LOG
 strWorkingDirectory=$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)
 strBlacklistFolder=$strWorkingDirectory/blacklists
 strLogFolder=$strWorkingDirectory/logs
@@ -12,7 +11,6 @@ strBlacklistTempFile=$strBlacklistFolder/tmp-blacklist
 strDDOSProtectionLockFile=$strWorkingDirectory/ddos.ruleset.lock
 
 intBlacklistingINPUTLineNo=$(iptables -n --list INPUT --line-numbers | grep -i $strChainName | sed -e 's/^\(.\{2\}\).*/\1/')
-objLOGChainCheck=$(iptables -nvL | grep -i $strChainNameLOG )
 
 function ConsoleLog() {
 
@@ -28,7 +26,7 @@ function ApplicationCheck(){
 }
 
 function CheckRuntimePreparing(){
-    aryApplications=( iptables iptables-save ipset wget tee fail2ban )
+    aryApplications=( iptables iptables-save ipset wget tee )
     aryFolders=( $strBlacklistFolder )
 
     for objApps in "${aryApplications[@]}"; do
@@ -52,17 +50,6 @@ function PrepareBacklist() {
         wget http://lists.blocklist.de/lists/all.txt -O $strBlacklistTempFile
         grep -v ":" $strBlacklistTempFile > $strBlacklistFile
         rm -rf $strBlacklistTempFile
-}
-
-function LogChainConfiguration() {
-    if [ -z "$intBlacklistingINPUTLineNo" ]; then
-        iptables -N $strChainNameLOG
-        iptables -I $strChainNameLOG 1 -j LOG -m limit --limit 5/s --log-prefix "NETFILTER DROP INBOUND : "
-        iptables -A $strChainNameLOG -j DROP
-        ConsoleLog "Chain $strChainNameLOG successfully created ..."
-    else
-        ConsoleLog "All fine, chain $strChainNameLOG already found in iptables ..."
-    fi
 }
 
 function ddosProectionRules() {
@@ -106,9 +93,6 @@ function ddosProectionRules() {
     fi
 }
 
-ConsoleLog "Check LOG chain configuration ..."
-LogChainConfiguration
-
 ConsoleLog "Check runtime preparing for ip-blacklister ..."
 CheckRuntimePreparing
 
@@ -134,8 +118,8 @@ rm -rf $strBlacklistFolder/*.* >> /dev/null 2>&1
 
 ConsoleLog "Checking INPUT rule for inserting  of $strChainName on 1 ..."
 if [ -z "$intBlacklistingINPUTLineNo" ]; then
-    iptables -I INPUT 1 -m set --match-set $strChainName src -j $strChainNameLOG >> /dev/null 2>&1
-    ConsoleLog "Rule-set $strChainName successfully insert in chain INPUT to 1 with jump to $strChainNameLOG ..."
+    iptables -I INPUT 1 -m set --match-set $strChainName src -j DROP >> /dev/null 2>&1
+    ConsoleLog "Rule-set $strChainName successfully insert in chain INPUT to 1 ..."
 else
     ConsoleLog "All fine, rule-set $strChainName already found in chain INPUT ..."
 fi
